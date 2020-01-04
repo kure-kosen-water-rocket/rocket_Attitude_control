@@ -2,8 +2,8 @@ import smbus
 import math
 import time
 import csv
-import pigpio
-from pigpio import pi
+import servo
+
 
 DEV_ADDR = 0x68
 ACCEL_XOUT = 0x3b
@@ -23,7 +23,7 @@ def read_byte(adr):
     return bus.read_byte_data(DEV_ADDR, adr)
 
 def read_word(adr):
-    high = bus.read_byte_data(DEV_ADDR, adr) 
+    high = bus.read_byte_data(DEV_ADDR, adr)
     low  = bus.read_byte_data(DEV_ADDR, adr+1)
     val  = (high << 8) + low
     return val
@@ -35,7 +35,8 @@ def read_word_sensor(adr):
     else:
         return val
 
-def get_gyro_data_lsb():               #角速度(ジャイロ)データ取得
+#角速度(ジャイロ)データ取得
+def get_gyro_data_lsb():
     x = read_word_sensor(GYRO_XOUT)
     y = read_word_sensor(GYRO_YOUT)
     z = read_word_sensor(GYRO_ZOUT)
@@ -48,7 +49,8 @@ def get_gyro_data_deg():
     z = z / 1310
     return [x, y, z]
 
-def get_accel_data_lsb():              #加速度データ取得
+#加速度データ取得
+def get_accel_data_lsb():
     x = read_word_sensor(ACCEL_XOUT)
     y = read_word_sensor(ACCEL_YOUT)
     z = read_word_sensor(ACCEL_ZOUT)
@@ -61,64 +63,63 @@ def get_accel_data_g():
     z = z / 16384.0
     return [x, y, z]
 
-class Servo_Class:
-    def __init__(self, Pin):
-        self.pi = pi()
-        self.mPin = Pin
-        self.pi.set_mode(self.mPin, pigpio.OUTPUT)
-
-    def SetPos(self, degree):
-        duty = int(((12-2.5)/180*degree+2.5)*10000)
-        self.pi.hardware_PWM(self.mPin, 50, duty)
-
-    def Cleanup(self):
-        self.pi.hardware_PWM(self.mPin, 50, self.SetPos(0))
-        time.sleep(1)
-        self.pi.set_mode(self.mPin, pigpio.INPUT)
-        self.pi.stop()
-
-dt = 0 #初期値の設定
+#初期値の設定
+dt = 0
 total_time = 0
 total_counts = 0
-calculate_time= 50
 old_y_gyro = 0
 old_angle = 0
 fieldnames = ['x_accel', 'y_accel', 'z_accel', 'x_gyro', 'y_gyro', 'z_gyro', 'dt']
+x_accel_histry = []
+y_accel_histry = []
+z_accel_histry = []
+x_gyro_histry = []
+y_gyro_histry = []
+z_gyro_histry = []
+dt_histry = []
+CALC_TIME = 5
 
-Servo = Servo_Class(Pin=18) #Servo_Classのインスタンス化
-Servo.SetPos(90) #初期位置を90度に設定
+Servo = servo.ServoController(Pin=18)
+Servo.set_position(90) #初期位置を90度に設定
 
 while 1:
     start = time.time() #ループ中にかかる時間を計測開始
-    
+
     x_gyro,  y_gyro,  z_gyro  = get_gyro_data_deg()
     x_accel, y_accel, z_accel = get_accel_data_g()
 
-    y_gyro = y_gyro*0.3
+    x_accel_histry.append(x_accel)
+    y_accel_histry.append(y_accel)
+    z_accel_histry.append(z_accel)
+    x_gyro_histry.append(x_gyro)
+    y_gyro_histry.append(y_gyro)
+    z_gyro_histry.append(z_gyro)
+    dt_histry.append(dt)
+
     y_angle = math.atan2(x_accel , math.sqrt(y_accel**2 + z_accel**2))#姿勢角の算出
     k = 0.2 * (65536**-((abs(x_accel))/10)) #加速度が増加→加速度から得られる角度の比重を小さくしていく係数k
     y_angle = (((1-k) * (old_angle + (((old_y_gyro + y_gyro)* dt) / 2)) + ((k* y_angle)))) #加速度とジャイロの相補フィルター
-    old_angle = y_angle #角速度で足していくため一つ前の角度が必要
-    old_y_gyro = y_gyro #台形うよう積分用に一つ前の角速度を残しておく
+    old_angle = y_angle #角度の変化量を足していくため一つ前の角度が必要
+    old_y_gyro = y_gyro #台形積分用に一つ前の角速度を残しておく
 
     if int(total_time) % 1 == 0: #dt秒毎に処理を実行
         if 86-int(math.degrees(y_angle)) < 180 and 86-int(math.degrees(y_angle)) > 0: #0度~180度の時のみ動作
-            Servo.SetPos(86 - int(math.degrees(y_angle))) #初ｓ期位置は90度からなので(86は調整した)
+            Servo.set_position(86 - int(math.degrees(y_angle))) #初期位置は90度からなので(86は調整した値)
 
-    with open('measurement.csv', 'a') as measurement_file:
-        writer = csv.DictWriter(measurement_file, fieldnames=fieldnames)
-        writer.writerow({'x_accel':x_accel,
-                         'y_accel':y_accel,
-                         'z_accel':z_accel,
-                         'x_gyro' :x_gyro ,
-                         'y_gyro' :y_gyro ,
-                         'z_gyro' :z_gyro ,
-                         'dt'     :dt })
-
-    if int(total_time) == int(calculate_time): #計測時間がtotal_timeに達したらプログラム終了
+    if int(total_time) > int(CALC_TIME): #計測時間がtotal_timeに達したらプログラム終了
         break
 
     dt = time.time() - start #ループにかかる時間を微小時間dtに代入
     total_time += dt
 
-Servo_right.Cleanup()
+Servo.cleanup_gpio()
+
+with open('measurement.csv', 'a') as measurement_file:
+        writer = csv.DictWriter(measurement_file, fieldnames=fieldnames)
+        writer.writerow({'x_accel':x_accel_histry,
+                         'y_accel':y_accel_histry,
+                         'z_accel':z_accel_histry,
+                         'x_gyro' :x_gyro_histry ,
+                         'y_gyro' :y_gyro_histry ,
+                         'z_gyro' :z_gyro_histry ,
+                         'dt'     :dt_histry })
