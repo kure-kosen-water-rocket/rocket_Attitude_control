@@ -28,16 +28,18 @@ while 1:
     data_logs.append([x_accel, y_accel, z_accel, x_gyro, y_gyro, z_gyro, dt])
 
     y_angle = math.atan2(x_accel , math.sqrt(y_accel**2 + z_accel**2))#姿勢角の算出
-    k = 0.2 * (65536**-((abs(x_accel))/10)) #加速度が増加→加速度から得られる角度の比重を小さくしていく係数k
-    y_angle = (((1-k) * (old_angle + (((old_y_gyro + y_gyro)* dt) / 2)) + ((k* y_angle)))) #加速度とジャイロの相補フィルター
+    k = 0.2 * (65536**-(abs(x_accel)/10)) #加速度が増加→加速度から得られる角度の比重を小さくしていく係数k
+    y_angle = (((1-k) * (old_angle + ((old_y_gyro + y_gyro)* dt / 2)) + k* y_angle)) #加速度とジャイロの相補フィルター
     old_angle = y_angle #角度の変化量を足していくため一つ前の角度が必要
     old_y_gyro = y_gyro #台形積分用に一つ前の角速度を残しておく
 
-    if int(total_time) % 1 == 0: #dt秒毎に処理を実行
-        if 86-int(math.degrees(y_angle)) < 180 and 86-int(math.degrees(y_angle)) > 0: #0度~180度の時のみ動作
-            Servo.set_position(86 - int(math.degrees(y_angle))) #初期位置は90度からなので(86は調整した値)
+    adjust_y_angle = 86-int(math.degrees(y_angle)) #初期位置は90度からなので(86は調整した値)
 
-    if int(total_time) > int(CALC_TIME): #計測時間がtotal_timeに達したらプログラム終了
+    if int(total_time) % 1 == 0: #dt秒毎に処理を実行
+        if adjust_y_angle < 180 and adjust_y_angle > 0: #0度~180度の時のみ動作
+            Servo.set_position(adjust_y_angle)
+
+    if CALC_TIME < int(total_time): #計測時間がtotal_timeに達したらプログラム終了
         break
 
     dt = time.time() - start #ループにかかる時間を微小時間dtに代入

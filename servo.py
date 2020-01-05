@@ -10,7 +10,8 @@ class ServoController:
         self.pi.set_mode(self.mPin, pigpio.OUTPUT)
 
     def set_position(self, degree):
-        duty = int(((12-2.5)/180*degree+2.5)*10000) #https://github.com/kure-kosen-water-rocket/rocket_attitude_control/issues/2
+        # ref: https://github.com/kure-kosen-water-rocket/rocket_attitude_control/issues/2
+        duty = int(((12-2.5)/180*degree+2.5)*10000)
         self.pi.hardware_PWM(self.mPin, 50, duty)
 
     def clean_up(self):
