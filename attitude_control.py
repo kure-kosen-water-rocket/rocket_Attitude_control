@@ -39,7 +39,8 @@ while 1:
         if adjust_y_angle < 180 and adjust_y_angle > 0: #0度~180度の時のみ動作
             Servo.set_position(adjust_y_angle)
 
-    if CALC_TIME < int(total_time): #計測時間がtotal_timeに達したらプログラム終了
+    #計測時間がtotal_timeに達したらプログラム終了
+    if CALC_TIME < int(total_time):
         break
 
     dt = time.time() - start #ループにかかる時間を微小時間dtに代入
