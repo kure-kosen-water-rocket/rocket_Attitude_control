@@ -1,4 +1,3 @@
-import smbus
 import math
 import time
 import csv
@@ -104,4 +103,4 @@ Servo.clean_up()
 with open('measurement.csv', 'w') as measurement_file:
     writer = csv.writer(measurement_file, lineterminator='\n')
     writer.writerow(fieldnames)
-    writer.writerows(experiment_log)
+    writer.writerows(data_log)
