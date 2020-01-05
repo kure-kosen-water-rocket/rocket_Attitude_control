@@ -2,65 +2,8 @@ import math
 import time
 import csv
 from servo import ServoController
+from mpu6050 import Mpu6050
 
-
-DEV_ADDR = 0x68 #https://shizenkarasuzon.hatenablog.com/entry/2019/03/06/114248
-ACCEL_XOUT = 0x3b
-ACCEL_YOUT = 0x3d
-ACCEL_ZOUT = 0x3f
-TEMP_OUT = 0x41
-GYRO_XOUT = 0x43
-GYRO_YOUT = 0x45
-GYRO_ZOUT = 0x47
-PWR_MGMT_1 = 0x6b
-PWR_MGMT_2 = 0x6c
-
-bus = smbus.SMBus(1)
-bus.write_byte_data(DEV_ADDR, PWR_MGMT_1, 0)
-
-def read_byte(adr):
-    return bus.read_byte_data(DEV_ADDR, adr)
-
-def read_word(adr):
-    high = bus.read_byte_data(DEV_ADDR, adr)
-    low  = bus.read_byte_data(DEV_ADDR, adr+1)
-    val  = (high << 8) + low
-    return val
-
-def read_word_sensor(adr):
-    val  = read_word(adr)
-    if (val >= 0x8000):
-        return -((65535 - val) + 1)
-    else:
-        return val
-
-#角速度(ジャイロ)データ取得
-def get_gyro_data_lsb():
-    x = read_word_sensor(GYRO_XOUT)
-    y = read_word_sensor(GYRO_YOUT)
-    z = read_word_sensor(GYRO_ZOUT)
-    return [x, y, z]
-
-def get_gyro_data_deg():
-    x,y,z = get_gyro_data_lsb()
-    x = x / 1310
-    y = y / 1310
-    z = z / 1310
-    return [x, y, z]
-
-#加速度データ取得
-def get_accel_data_lsb():
-    x = read_word_sensor(ACCEL_XOUT)
-    y = read_word_sensor(ACCEL_YOUT)
-    z = read_word_sensor(ACCEL_ZOUT)
-    return [x, y, z]
-
-def get_accel_data_g():
-    x,y,z = get_accel_data_lsb()
-    x = x / 16384.0
-    y = y / 16384.0
-    z = z / 16384.0
-    return [x, y, z]
 
 #初期値の設定
 dt = 0
@@ -71,14 +14,16 @@ fieldnames = ['x_accel', 'y_accel', 'z_accel', 'x_gyro', 'y_gyro', 'z_gyro', 'dt
 data_logs = []
 CALC_TIME = 5
 
+mpu6050 = Mpu6050()
+
 Servo = ServoController(Pin=18)
 Servo.set_position(90) #初期位置を90度に設定
 
 while 1:
     start = time.time() #ループ中にかかる時間を計測開始
 
-    x_gyro,  y_gyro,  z_gyro  = get_gyro_data_deg()
-    x_accel, y_accel, z_accel = get_accel_data_g()
+    x_gyro,  y_gyro,  z_gyro  = mpu6050.get_gyro_data_deg()
+    x_accel, y_accel, z_accel = mpu6050.get_accel_data_g()
 
     data_logs.append([x_accel, y_accel, z_accel, x_gyro, y_gyro, z_gyro, dt])
 

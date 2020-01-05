@@ -17,45 +17,42 @@ class Mpu6050:
         self.bus = SMBus(1)
         self.bus.write_byte_data(self.DEV_ADDR, self.PWR_MGMT_1, 0)
 
-    def read_byte(self, adr):
-        return self.bus.read_byte_data(self.DEV_ADDR, adr)
-
-    def read_word(self, adr):
+    def __read_word(self, adr):
         high = self.bus.read_byte_data(self.DEV_ADDR, adr)
         low  = self.bus.read_byte_data(self.DEV_ADDR, adr+1)
         val  = (high << 8) + low
         return val
 
-    def read_word_sensor(self, adr):
-        val  = self.read_word(adr)
+    def __read_word_sensor(self, adr):
+        val  = self.__read_word(adr)
         if (val >= 0x8000):
             return -((65535 - val) + 1)
         else:
             return val
 
     #角速度(ジャイロ)データ取得
-    def get_gyro_data_lsb(self):
-        self.x = self.read_word_sensor(self.GYRO_XOUT)
-        self.y = self.read_word_sensor(self.GYRO_YOUT)
-        self.z = self.read_word_sensor(self.GYRO_ZOUT)
+    def __get_gyro_data_lsb(self):
+        self.x = self.__read_word_sensor(self.GYRO_XOUT)
+        self.y = self.__read_word_sensor(self.GYRO_YOUT)
+        self.z = self.__read_word_sensor(self.GYRO_ZOUT)
         return [self.x, self.y, self.z]
 
     def get_gyro_data_deg(self):
-        x,y,z = self.get_gyro_data_lsb()
+        x,y,z = self.__get_gyro_data_lsb()
         x = self.x / 1310
         y = self.y / 1310
         z = self.z / 1310
         return [x, y, z]
 
     #加速度データ取得
-    def get_accel_data_lsb(self):
-        self.x = self.read_word_sensor(self.ACCEL_XOUT)
-        self.y = self.read_word_sensor(self.ACCEL_YOUT)
-        self.z = self.read_word_sensor(self.ACCEL_ZOUT)
+    def __get_accel_data_lsb(self):
+        self.x = self.__read_word_sensor(self.ACCEL_XOUT)
+        self.y = self.__read_word_sensor(self.ACCEL_YOUT)
+        self.z = self.__read_word_sensor(self.ACCEL_ZOUT)
         return [self.x, self.y, self.z]
 
     def get_accel_data_g(self):
-        x,y,z = self.get_accel_data_lsb()
+        x,y,z = self.__get_accel_data_lsb()
         x = self.x / 16384.0
         y = self.y / 16384.0
         z = self.z / 16384.0
