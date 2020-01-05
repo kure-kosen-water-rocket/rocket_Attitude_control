@@ -1,7 +1,8 @@
 from smbus import SMBus
 
 
-DEV_ADDR = 0x68 #https://shizenkarasuzon.hatenablog.com/entry/2019/03/06/114248
+# ref: https://shizenkarasuzon.hatenablog.com/entry/2019/03/06/114248
+DEV_ADDR = 0x68
 ACCEL_XOUT = 0x3b
 ACCEL_YOUT = 0x3d
 ACCEL_ZOUT = 0x3f
