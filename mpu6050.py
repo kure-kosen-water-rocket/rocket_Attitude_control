@@ -1,5 +1,6 @@
 from smbus import SMBus
 
+
 class Mpu6050:
 
     def __init__(self):

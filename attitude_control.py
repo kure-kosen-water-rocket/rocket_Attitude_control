@@ -68,7 +68,7 @@ total_time = 0
 old_y_gyro = 0
 old_angle = 0
 fieldnames = ['x_accel', 'y_accel', 'z_accel', 'x_gyro', 'y_gyro', 'z_gyro', 'dt']
-data_log = []
+data_logs = []
 CALC_TIME = 5
 
 Servo = ServoController(Pin=18)
@@ -80,7 +80,7 @@ while 1:
     x_gyro,  y_gyro,  z_gyro  = get_gyro_data_deg()
     x_accel, y_accel, z_accel = get_accel_data_g()
 
-    data_log.append([x_accel, y_accel, z_accel, x_gyro, y_gyro, z_gyro, dt])
+    data_logs.append([x_accel, y_accel, z_accel, x_gyro, y_gyro, z_gyro, dt])
 
     y_angle = math.atan2(x_accel , math.sqrt(y_accel**2 + z_accel**2))#姿勢角の算出
     k = 0.2 * (65536**-((abs(x_accel))/10)) #加速度が増加→加速度から得られる角度の比重を小さくしていく係数k
@@ -103,4 +103,4 @@ Servo.clean_up()
 with open('measurement.csv', 'w') as measurement_file:
     writer = csv.writer(measurement_file, lineterminator='\n')
     writer.writerow(fieldnames)
-    writer.writerows(data_log)
+    writer.writerows(data_logs)
