@@ -33,7 +33,7 @@ while 1:
     old_angle = y_angle #角度の変化量を足していくため一つ前の角度が必要
     old_y_gyro = y_gyro #台形積分用に一つ前の角速度を残しておく
 
-    adjust_y_angle = 90-int(math.degrees(y_angle)) #初期位置は90度からなので(86は調整した値)
+    adjust_y_angle = 90-int(math.degrees(y_angle)) #初期位置は90度からなので
 
     if adjust_y_angle < 180 and adjust_y_angle > 0: #0度~180度の時のみ動作
         Servo.set_position(adjust_y_angle)
