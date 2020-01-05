@@ -33,11 +33,10 @@ while 1:
     old_angle = y_angle #角度の変化量を足していくため一つ前の角度が必要
     old_y_gyro = y_gyro #台形積分用に一つ前の角速度を残しておく
 
-    adjust_y_angle = 86-int(math.degrees(y_angle)) #初期位置は90度からなので(86は調整した値)
+    adjust_y_angle = 90-int(math.degrees(y_angle)) #初期位置は90度からなので(86は調整した値)
 
-    if int(total_time) % 1 == 0: #dt秒毎に処理を実行
-        if adjust_y_angle < 180 and adjust_y_angle > 0: #0度~180度の時のみ動作
-            Servo.set_position(adjust_y_angle)
+    if adjust_y_angle < 180 and adjust_y_angle > 0: #0度~180度の時のみ動作
+        Servo.set_position(adjust_y_angle)
 
     #計測時間がtotal_timeに達したらプログラム終了
     if CALC_TIME < int(total_time):

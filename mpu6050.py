@@ -32,7 +32,7 @@ class Mpu6050:
         else:
             return val
 
-    #角速度(ジャイロ)データ取得
+    #角速度(rad/msec)取得
     def __load_gyro_sensor(self):
         x_gyro = self.__read_word_sensor(GYRO_XOUT)
         y_gyro = self.__read_word_sensor(GYRO_YOUT)
@@ -46,7 +46,7 @@ class Mpu6050:
         z_gyro /= 131000
         return [x_gyro, y_gyro, z_gyro]
 
-    #加速度データ取得
+    #加速度(m/msec)取得
     def __load_accelerometer(self):
         x_accel = self.__read_word_sensor(ACCEL_XOUT)
         y_accel = self.__read_word_sensor(ACCEL_YOUT)
