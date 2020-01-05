@@ -2,10 +2,10 @@ import smbus
 import math
 import time
 import csv
-import servo
+from servo import ServoController
 
 
-DEV_ADDR = 0x68
+DEV_ADDR = 0x68 #https://shizenkarasuzon.hatenablog.com/entry/2019/03/06/114248
 ACCEL_XOUT = 0x3b
 ACCEL_YOUT = 0x3d
 ACCEL_ZOUT = 0x3f
@@ -66,20 +66,13 @@ def get_accel_data_g():
 #初期値の設定
 dt = 0
 total_time = 0
-total_counts = 0
 old_y_gyro = 0
 old_angle = 0
 fieldnames = ['x_accel', 'y_accel', 'z_accel', 'x_gyro', 'y_gyro', 'z_gyro', 'dt']
-x_accel_histry = []
-y_accel_histry = []
-z_accel_histry = []
-x_gyro_histry = []
-y_gyro_histry = []
-z_gyro_histry = []
-dt_histry = []
+data_log = []
 CALC_TIME = 5
 
-Servo = servo.ServoController(Pin=18)
+Servo = ServoController(Pin=18)
 Servo.set_position(90) #初期位置を90度に設定
 
 while 1:
@@ -88,13 +81,7 @@ while 1:
     x_gyro,  y_gyro,  z_gyro  = get_gyro_data_deg()
     x_accel, y_accel, z_accel = get_accel_data_g()
 
-    x_accel_histry.append(x_accel)
-    y_accel_histry.append(y_accel)
-    z_accel_histry.append(z_accel)
-    x_gyro_histry.append(x_gyro)
-    y_gyro_histry.append(y_gyro)
-    z_gyro_histry.append(z_gyro)
-    dt_histry.append(dt)
+    data_log.append([x_accel, y_accel, z_accel, x_gyro, y_gyro, z_gyro, dt])
 
     y_angle = math.atan2(x_accel , math.sqrt(y_accel**2 + z_accel**2))#姿勢角の算出
     k = 0.2 * (65536**-((abs(x_accel))/10)) #加速度が増加→加速度から得られる角度の比重を小さくしていく係数k
@@ -112,14 +99,9 @@ while 1:
     dt = time.time() - start #ループにかかる時間を微小時間dtに代入
     total_time += dt
 
-Servo.cleanup_gpio()
+Servo.clean_up()
 
-with open('measurement.csv', 'a') as measurement_file:
-        writer = csv.DictWriter(measurement_file, fieldnames=fieldnames)
-        writer.writerow({'x_accel':x_accel_histry,
-                         'y_accel':y_accel_histry,
-                         'z_accel':z_accel_histry,
-                         'x_gyro' :x_gyro_histry ,
-                         'y_gyro' :y_gyro_histry ,
-                         'z_gyro' :z_gyro_histry ,
-                         'dt'     :dt_histry })
+with open('measurement.csv', 'w') as measurement_file:
+    writer = csv.writer(measurement_file, lineterminator='\n')
+    writer.writerow(fieldnames)
+    writer.writerows(experiment_log)
