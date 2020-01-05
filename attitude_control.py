@@ -12,7 +12,7 @@ old_y_gyro = 0
 old_angle = 0
 fieldnames = ['x_accel', 'y_accel', 'z_accel', 'x_gyro', 'y_gyro', 'z_gyro', 'dt']
 data_logs = []
-CALC_TIME = 5
+CALC_TIME = 20
 
 mpu6050 = Mpu6050()
 
@@ -22,8 +22,8 @@ Servo.set_position(90) #初期位置を90度に設定
 while 1:
     start = time.time() #ループ中にかかる時間を計測開始
 
-    x_gyro,  y_gyro,  z_gyro  = mpu6050.get_gyro_data_deg()
-    x_accel, y_accel, z_accel = mpu6050.get_accel_data_g()
+    x_gyro,  y_gyro,  z_gyro  = mpu6050.gyro_lsb()
+    x_accel, y_accel, z_accel = mpu6050.accel_lsb()
 
     data_logs.append([x_accel, y_accel, z_accel, x_gyro, y_gyro, z_gyro, dt])
 

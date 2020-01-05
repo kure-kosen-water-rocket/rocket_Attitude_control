@@ -1,7 +1,7 @@
 from smbus import SMBus
 
 
-# ref: https://shizenkarasuzon.hatenablog.com/entry/2019/03/06/114248
+# ref: http://www.widesnow.com/entry/2015/09/10/061128
 DEV_ADDR = 0x68
 ACCEL_XOUT = 0x3b
 ACCEL_YOUT = 0x3d
@@ -33,29 +33,29 @@ class Mpu6050:
             return val
 
     #角速度(ジャイロ)データ取得
-    def __get_gyro_data_lsb(self):
+    def __load_gyro_sensor(self):
         x_gyro = self.__read_word_sensor(GYRO_XOUT)
         y_gyro = self.__read_word_sensor(GYRO_YOUT)
         z_gyro = self.__read_word_sensor(GYRO_ZOUT)
         return [x_gyro, y_gyro, z_gyro]
 
-    def get_gyro_data_deg(self):
-        x_gyro,y_gyro,z_gyro = self.__get_gyro_data_lsb()
-        x_gyro /= 1310
-        y_gyro /= 1310
-        z_gyro /= 1310
+    def gyro_lsb(self):
+        x_gyro,y_gyro,z_gyro = self.__load_gyro_sensor()
+        x_gyro /= 131000
+        y_gyro /= 131000
+        z_gyro /= 131000
         return [x_gyro, y_gyro, z_gyro]
 
     #加速度データ取得
-    def __get_accel_data_lsb(self):
+    def __load_accelerometer(self):
         x_accel = self.__read_word_sensor(ACCEL_XOUT)
         y_accel = self.__read_word_sensor(ACCEL_YOUT)
         z_accel = self.__read_word_sensor(ACCEL_ZOUT)
         return [x_accel, y_accel, z_accel]
 
-    def get_accel_data_g(self):
-        x_accel,y_accel,z_accel = self.__get_accel_data_lsb()
-        x_accel /= 16384.0
-        y_accel /= 16384.0
-        z_accel /= 16384.0
+    def accel_lsb(self):
+        x_accel,y_accel,z_accel = self.__load_accelerometer()
+        x_accel /= 16384000
+        y_accel /= 16384000
+        z_accel /= 16384000
         return [x_accel, y_accel, z_accel]
