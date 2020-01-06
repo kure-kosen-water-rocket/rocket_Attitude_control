@@ -41,9 +41,9 @@ class Mpu6050:
 
     def gyro_lsb(self):
         x_gyro,y_gyro,z_gyro = self.__load_gyro_sensor()
-        x_gyro /= 131000
-        y_gyro /= 131000
-        z_gyro /= 131000
+        x_gyro /= 131
+        y_gyro /= 131
+        z_gyro /= 131
         return [x_gyro, y_gyro, z_gyro]
 
     #加速度(m/msec)取得
@@ -55,7 +55,8 @@ class Mpu6050:
 
     def accel_lsb(self):
         x_accel,y_accel,z_accel = self.__load_accelerometer()
-        x_accel /= 16384000
-        y_accel /= 16384000
-        z_accel /= 16384000
+        x_accel /= 16384
+        y_accel /= 16384
+        z_accel /= 16384
         return [x_accel, y_accel, z_accel]
+        

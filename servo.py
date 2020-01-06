@@ -1,11 +1,10 @@
 import time
 import pigpio
-from pigpio import pi
 
 
 class ServoController:
     def __init__(self, Pin): #BCM番号ではなく物理的なpin番号
-        self.pi = pi()
+        self.pi = pigpio.pi()
         self.mPin = Pin
         self.pi.set_mode(self.mPin, pigpio.OUTPUT)
 

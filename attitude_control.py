@@ -29,13 +29,13 @@ while 1:
 
     y_angle = math.atan2(x_accel , math.sqrt(y_accel**2 + z_accel**2))#姿勢角の算出
     k = 0.2 * (65536**-(abs(x_accel)/10)) #加速度が増加→加速度から得られる角度の比重を小さくしていく係数k
-    y_angle = (((1-k) * (old_angle + ((old_y_gyro + y_gyro)* dt / 2)) + k* y_angle)) #加速度とジャイロの相補フィルター
+    y_angle = (((1-k) * (old_angle + math.radians(((old_y_gyro + y_gyro)* dt) / 2)) + k* y_angle)) #加速度とジャイロの相補フィルター
     old_angle = y_angle #角度の変化量を足していくため一つ前の角度が必要
     old_y_gyro = y_gyro #台形積分用に一つ前の角速度を残しておく
 
-    adjust_y_angle = 90-int(math.degrees(y_angle)) #初期位置は90度からなので(86は調整した値)
+    adjust_y_angle = 90-int(math.degrees(y_angle)) #初期位置は90度からなので
 
-    if adjust_y_angle < 180 and adjust_y_angle > 0: #0度~180度の時のみ動作
+    if adjust_y_angle < 180 and adjust_y_angle > 0: #センサーが0度~180度の時のみ動作
         Servo.set_position(adjust_y_angle)
 
     #計測時間がtotal_timeに達したらプログラム終了
