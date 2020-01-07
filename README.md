@@ -1,4 +1,4 @@
-# Rocket_Attitude_control
+# Rocket_Attitude_Control
 
 ラズパイでロケットの姿勢制御をするためのコード
 
